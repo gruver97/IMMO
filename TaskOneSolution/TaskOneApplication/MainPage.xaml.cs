@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
@@ -95,7 +98,7 @@ namespace TaskOneApplication
                         LayoutStackPanel.Children.Add(button);
                         break;
                     case ItemTypeEnum.ImageItem:
-                        var border = CreateImage(configurationModel);
+                        var border = await CreateImageAsync(configurationModel);
                         LayoutStackPanel.Children.Add(border);
                         break;
                     default:
@@ -104,7 +107,7 @@ namespace TaskOneApplication
             }
         }
 
-        private Border CreateImage(ConfigurationModel configurationModel)
+        private async Task<Border> CreateImageAsync(ConfigurationModel configurationModel)
         {
             var border = new Border
             {
@@ -118,26 +121,48 @@ namespace TaskOneApplication
             border.Child = grid;
             if (!string.IsNullOrWhiteSpace(configurationModel.Content))
             {
-                var bitmapImage = new BitmapImage(new Uri(configurationModel.Content));
-                bitmapImage.DownloadProgress += (sender, eventArgs) =>
+                var bitmapImage = new BitmapImage();                              
+                using (var imageStream = await DownloadImageAsync(new Uri(configurationModel.Content)))
                 {
-                    if (eventArgs.Progress == 100) progressRing.IsActive = false;
-                };
+                    imageStream.Seek(0);
+                    await bitmapImage.SetSourceAsync(imageStream);
+                }
                 var xamlImage = new Image
                 {
-                    Source = bitmapImage,
                     Width = ScrollViewer.ViewportWidth,
                     Height = ScrollViewer.ViewportHeight,
                     Stretch = Stretch.Uniform,
-                    Name = configurationModel.ItemName
+                    Name = configurationModel.ItemName,
+                    Source = bitmapImage
                 };
                 grid.Children.Add(xamlImage);
+                bitmapImage.UriSource = new Uri(configurationModel.Content);
+                bitmapImage.ImageOpened += (sender, eventArgs) =>
+                {
+                    progressRing.IsActive = false;
+                };                                              
             }
             else
             {
                 border.Visibility = Visibility.Collapsed;
             }
             return border;
+        }
+
+        private async Task<IRandomAccessStream> DownloadImageAsync(Uri imageUri)
+        {
+            var httpClient = new HttpClient();
+            var httpResponseMessage = await httpClient.GetAsync(imageUri);
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using (var stream = await httpResponseMessage.Content.ReadAsStreamAsync())
+                {
+                    var inMemoryRandomAccessStream = new InMemoryRandomAccessStream();
+                    await stream.CopyToAsync(inMemoryRandomAccessStream.AsStreamForWrite());
+                    return inMemoryRandomAccessStream;
+                }
+            }
+            else return null;
         }
 
         private Button CreateButton(ConfigurationModel configurationModel)

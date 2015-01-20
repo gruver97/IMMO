@@ -13,9 +13,7 @@
                   HorizontalScrollMode="Disabled"
                   VerticalScrollBarVisibility="Auto"
                   VerticalScrollMode="Auto">
-        <StackPanel x:Name="LayoutStackPanel"
-                    HorizontalAlignment="Center"
-                    Orientation="Vertical" />
+        <StackPanel x:Name="LayoutStackPanel" Orientation="Vertical" />
     </ScrollViewer>
 
 </Page>
