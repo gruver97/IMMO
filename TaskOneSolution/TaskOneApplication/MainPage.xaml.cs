@@ -23,16 +23,18 @@ namespace TaskOneApplication
 
         private readonly List<ConfigurationModel> _defaultConfiguration = new List<ConfigurationModel>
         {
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test"),
-            new ConfigurationModel(ItemTypeEnum.ImageItem,
+            new ConfigurationModel("Button1", ItemTypeEnum.ButtonItem, "Test"),
+            new ConfigurationModel("Button0", ItemTypeEnum.ButtonItem, string.Empty),
+            new ConfigurationModel("TextBlock1", ItemTypeEnum.TextBlockItem, "Test"),
+            new ConfigurationModel("Image1", ItemTypeEnum.ImageItem,
                 "http://s3.amazonaws.com/digitaltrends-uploads-prod/2014/02/Nokia-needs-to-escape-Windows-Phone.jpg"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.ImageItem,
+            new ConfigurationModel("Image0", ItemTypeEnum.ImageItem, string.Empty),
+            new ConfigurationModel("Button2", ItemTypeEnum.ButtonItem, "Test test"),
+            new ConfigurationModel("Image2", ItemTypeEnum.ImageItem,
                 "http://www.computerra.ru/wp-content/uploads/2013/06/video-review-htcs-windows-phone-8x-300x224.jpg"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.ImageItem,
-                "http://static.trustedreviews.com/94/00002fa4e/9d67/Windows-Phone-8-Update-3.jpeg"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test")
+            new ConfigurationModel("Button3", ItemTypeEnum.ButtonItem, "Test test test"),
+            new ConfigurationModel("Image3", ItemTypeEnum.ImageItem,
+                "http://static.trustedreviews.com/94/00002fa4e/9d67/Windows-Phone-8-Update-3.jpeg")
         };
 
         public MainPage()
@@ -71,44 +73,90 @@ namespace TaskOneApplication
                 switch (configurationModel.ItemType)
                 {
                     case ItemTypeEnum.TextBlockItem:
-                        LayoutStackPanel.Children.Add(new TextBlock
-                        {
-                            Margin = new Thickness(0, 10, 0, 10),
-                            Text = configurationModel.Content,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            FontSize = 32
-                        });
+                        var block = CreateTextBlock(configurationModel);
+                        LayoutStackPanel.Children.Add(block);
                         break;
                     case ItemTypeEnum.ButtonItem:
-                        LayoutStackPanel.Children.Add(new Button
+                        var button = CreateButton(configurationModel);
+                        button.Tapped += (sender, eventArgs) =>
                         {
-                            Content = configurationModel.Content,
-                            Margin = new Thickness(0, 10, 0, 10),
-                            HorizontalAlignment = HorizontalAlignment.Stretch
-                        });
+                            foreach (
+                                var child in
+                                    LayoutStackPanel.Children.Cast<FrameworkElement>()
+                                        .Where(item => item.Name == "TextBlock1"))
+                            {
+                                if (child is TextBlock)
+                                {
+                                    var textBlock = child as TextBlock;
+                                    textBlock.Text = "Don't stop me now.";
+                                }
+                            }
+                        };
+                        LayoutStackPanel.Children.Add(button);
                         break;
                     case ItemTypeEnum.ImageItem:
-                        var bitmapImage = new BitmapImage(new Uri(configurationModel.Content));
-                        var xamlImage = new Image
-                        {
-                            Source = bitmapImage,
-                            Width = ScrollViewer.ViewportWidth,
-                            Height = ScrollViewer.ViewportHeight,
-                            Stretch = Stretch.Uniform
-                        };
-                        var border = new Border()
-                        {
-                            BorderBrush = new SolidColorBrush(Colors.Red),
-                            BorderThickness = new Thickness(3),
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        };
-                        border.Child = xamlImage;
+                        var border = CreateImage(configurationModel);
                         LayoutStackPanel.Children.Add(border);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        private Border CreateImage(ConfigurationModel configurationModel)
+        {
+            var border = new Border
+            {
+                BorderBrush = new SolidColorBrush(Colors.Red),
+                BorderThickness = new Thickness(3),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            if (!string.IsNullOrWhiteSpace(configurationModel.Content))
+            {
+                var bitmapImage = new BitmapImage(new Uri(configurationModel.Content));
+                var xamlImage = new Image
+                {
+                    Source = bitmapImage,
+                    Width = ScrollViewer.ViewportWidth,
+                    Height = ScrollViewer.ViewportHeight,
+                    Stretch = Stretch.Uniform,
+                    Name = configurationModel.ItemName
+                };
+                border.Child = xamlImage;
+            }
+            else
+            {
+                border.Visibility = Visibility.Collapsed;
+            }
+            return border;
+        }
+
+        private Button CreateButton(ConfigurationModel configurationModel)
+        {
+            var button = new Button
+            {
+                Content = configurationModel.Content,
+                Margin = new Thickness(0, 10, 0, 10),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Name = configurationModel.ItemName
+            };
+            if (string.IsNullOrWhiteSpace(configurationModel.Content)) button.Visibility = Visibility.Collapsed;
+            return button;
+        }
+
+        private TextBlock CreateTextBlock(ConfigurationModel configurationModel)
+        {
+            var block = new TextBlock
+            {
+                Margin = new Thickness(0, 10, 0, 10),
+                Text = configurationModel.Content,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                FontSize = 32,
+                Name = configurationModel.ItemName
+            };
+            if (string.IsNullOrWhiteSpace(configurationModel.Content)) block.Visibility = Visibility.Collapsed;
+            return block;
         }
 
         private async Task<IEnumerable<ConfigurationModel>> LoadConfigurationAsync()
