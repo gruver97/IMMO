@@ -9,7 +9,7 @@ namespace TaskOneApplication
     /// </summary>
     public interface IScreenContentConfiguration
     {
-        Task SaveConfiguration(IEnumerable<ConfigurationModel> configuration, string configurationName);
-        Task<IEnumerable<ConfigurationModel>> LoadConfiguration(string configurationName);
+        Task SaveConfigurationAsync(IEnumerable<ConfigurationModel> configuration, string configurationName);
+        Task<IEnumerable<ConfigurationModel>> LoadConfigurationAsync(string configurationName);
     }
 }

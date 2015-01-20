@@ -24,13 +24,13 @@ namespace TaskOneApplication
         ///     Сохраняет (с перезаписью) имеющуюся конфигурацю
         /// </summary>
         /// <returns></returns>
-        public async Task SaveConfiguration(IEnumerable<ConfigurationModel> configuration, string configurationName)
+        public async Task SaveConfigurationAsync(IEnumerable<ConfigurationModel> configuration, string configurationName)
         {
             if (string.IsNullOrWhiteSpace(configurationName))
                 throw new ArgumentNullException("configurationName", "configurationName cannot be empty");
             try
             {
-                var serializedConfiguration = JsonConvert.SerializeObject(configuration);
+                var serializedConfiguration = JsonConvert.SerializeObject(configuration, new Newtonsoft.Json.Converters.StringEnumConverter());
                 var configurationFile =
                     await
                         _localStorageFolder.CreateFileAsync(configurationName, CreationCollisionOption.ReplaceExisting);
@@ -63,7 +63,7 @@ namespace TaskOneApplication
         ///     Загружает (при наличии) конфигурацию.
         /// </summary>
         /// <returns>Коллекция объектов конфигурации или null, в случае её отстутствия</returns>
-        public async Task<IEnumerable<ConfigurationModel>> LoadConfiguration(string configurationName)
+        public async Task<IEnumerable<ConfigurationModel>> LoadConfigurationAsync(string configurationName)
         {
             if (string.IsNullOrWhiteSpace(configurationName))
                 throw new ArgumentNullException("configurationName", "configurationName cannot be empty");
@@ -81,7 +81,7 @@ namespace TaskOneApplication
                         await
                             readStream.ReadAsync(buffer.AsBuffer(), buffer.AsBuffer().Capacity, InputStreamOptions.None);
                         var deserializedString = Encoding.UTF8.GetString(buffer, 0, buffer.Count());
-                        return JsonConvert.DeserializeObject<IEnumerable<ConfigurationModel>>(deserializedString);
+                        return JsonConvert.DeserializeObject<IEnumerable<ConfigurationModel>>(deserializedString, new Newtonsoft.Json.Converters.StringEnumConverter());
                     }
                     return null;
                 }
