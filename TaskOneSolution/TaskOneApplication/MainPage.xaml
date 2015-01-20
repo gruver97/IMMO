@@ -7,9 +7,15 @@
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
-    <Grid>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                  HorizontalScrollMode="Disabled"
+                  VerticalScrollBarVisibility="Auto"
+                  VerticalScrollMode="Auto"
+>
         <StackPanel x:Name="LayoutStackPanel"
                     HorizontalAlignment="Center"
                     Orientation="Vertical" />
-    </Grid>
+    </ScrollViewer>
+
 </Page>
