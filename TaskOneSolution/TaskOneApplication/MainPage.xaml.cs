@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Windows.UI.Popups;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using TaskOneApplication.Model;
@@ -13,16 +16,17 @@ namespace TaskOneApplication
     public sealed partial class MainPage : Page
     {
         private const string ConfigurationName = "DefaultConfiguration";
+        private readonly IScreenContentConfiguration _contentConfiguration = new ScreenContentConfiguration();
 
         private readonly List<ConfigurationModel> _defaultConfiguration = new List<ConfigurationModel>
         {
             new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test"),
             new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test")
+            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test"),
+            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test"),
+            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test"),
+            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test test")
         };
-
-        private readonly IScreenContentConfiguration _contentConfiguration = new ScreenContentConfiguration();
-
 
         public MainPage()
         {
@@ -37,17 +41,55 @@ namespace TaskOneApplication
         ///     Event data that describes how this page was reached.
         ///     This parameter is typically used to configure the page.
         /// </param>
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            Func<Task> emptyConfigurationAction = async () =>
+            {
+                var messageDialog = new MessageDialog("Пустая конфигурация");
+                await messageDialog.ShowAsync();
+            };
             await InitializeScreenConfigurationAsync();
-            await LoadConfigurationAsync();
+            var screenConfiguration = await LoadConfigurationAsync();
+            if (screenConfiguration == null)
+            {
+                await emptyConfigurationAction.Invoke();
+            }
+            var configurationModels = screenConfiguration as IList<ConfigurationModel> ?? screenConfiguration.ToList();
+            if (!configurationModels.Any())
+            {
+                await emptyConfigurationAction.Invoke();
+            }
+            foreach (var configurationModel in configurationModels)
+            {
+                switch (configurationModel.ItemType)
+                {
+                    case ItemTypeEnum.TextBlockItem:
+                        LayoutStackPanel.Children.Add(new TextBlock
+                        {
+                            Margin = new Thickness(0, 10, 0, 10),
+                            Text = configurationModel.Content
+                        });
+                        break;
+                    case ItemTypeEnum.ButtonItem:
+                        LayoutStackPanel.Children.Add(new Button
+                        {
+                            Content = configurationModel.Content,
+                            Margin = new Thickness(0, 10, 0, 10)
+                        });
+                        break;
+                    case ItemTypeEnum.ImageItem:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
 
-        private async Task LoadConfigurationAsync()
+        private async Task<IEnumerable<ConfigurationModel>> LoadConfigurationAsync()
         {
             try
             {
-               var screenConfiguration =  await _contentConfiguration.LoadConfigurationAsync(ConfigurationName);
+                return await _contentConfiguration.LoadConfigurationAsync(ConfigurationName);
             }
             catch (Exception exception)
             {
@@ -64,7 +106,7 @@ namespace TaskOneApplication
             catch (Exception exception)
             {
                 throw;
-            }  
+            }
         }
     }
 }
