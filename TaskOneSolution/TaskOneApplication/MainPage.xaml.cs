@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using TaskOneApplication.Model;
 
@@ -21,31 +24,15 @@ namespace TaskOneApplication
         private readonly List<ConfigurationModel> _defaultConfiguration = new List<ConfigurationModel>
         {
             new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test"),
+            new ConfigurationModel(ItemTypeEnum.ImageItem,
+                "http://s3.amazonaws.com/digitaltrends-uploads-prod/2014/02/Nokia-needs-to-escape-Windows-Phone.jpg"),
             new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test"),
+            new ConfigurationModel(ItemTypeEnum.ImageItem,
+                "http://www.computerra.ru/wp-content/uploads/2013/06/video-review-htcs-windows-phone-8x-300x224.jpg"),
             new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem,
-                "Test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem,
-                "Test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.ButtonItem, "Test test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test"),
-            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test test test")
+            new ConfigurationModel(ItemTypeEnum.ImageItem,
+                "http://static.trustedreviews.com/94/00002fa4e/9d67/Windows-Phone-8-Update-3.jpeg"),
+            new ConfigurationModel(ItemTypeEnum.TextBlockItem, "Test")
         };
 
         public MainPage()
@@ -87,17 +74,36 @@ namespace TaskOneApplication
                         LayoutStackPanel.Children.Add(new TextBlock
                         {
                             Margin = new Thickness(0, 10, 0, 10),
-                            Text = configurationModel.Content
+                            Text = configurationModel.Content,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            FontSize = 32
                         });
                         break;
                     case ItemTypeEnum.ButtonItem:
                         LayoutStackPanel.Children.Add(new Button
                         {
                             Content = configurationModel.Content,
-                            Margin = new Thickness(0, 10, 0, 10)
+                            Margin = new Thickness(0, 10, 0, 10),
+                            HorizontalAlignment = HorizontalAlignment.Stretch
                         });
                         break;
                     case ItemTypeEnum.ImageItem:
+                        var bitmapImage = new BitmapImage(new Uri(configurationModel.Content));
+                        var xamlImage = new Image
+                        {
+                            Source = bitmapImage,
+                            Width = ScrollViewer.ViewportWidth,
+                            Height = ScrollViewer.ViewportHeight,
+                            Stretch = Stretch.Uniform
+                        };
+                        var border = new Border()
+                        {
+                            BorderBrush = new SolidColorBrush(Colors.Red),
+                            BorderThickness = new Thickness(3),
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        };
+                        border.Child = xamlImage;
+                        LayoutStackPanel.Children.Add(border);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

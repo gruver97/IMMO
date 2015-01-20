@@ -8,11 +8,11 @@
       mc:Ignorable="d">
 
 
-    <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+    <ScrollViewer x:Name="ScrollViewer"
+                  HorizontalScrollBarVisibility="Disabled"
                   HorizontalScrollMode="Disabled"
                   VerticalScrollBarVisibility="Auto"
-                  VerticalScrollMode="Auto"
->
+                  VerticalScrollMode="Auto">
         <StackPanel x:Name="LayoutStackPanel"
                     HorizontalAlignment="Center"
                     Orientation="Vertical" />
