@@ -112,9 +112,17 @@ namespace TaskOneApplication
                 BorderThickness = new Thickness(3),
                 HorizontalAlignment = HorizontalAlignment.Center
             };
+            var grid = new Grid();
+            var progressRing = new ProgressRing() {IsActive = true, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center};
+            grid.Children.Add(progressRing);
+            border.Child = grid;
             if (!string.IsNullOrWhiteSpace(configurationModel.Content))
             {
                 var bitmapImage = new BitmapImage(new Uri(configurationModel.Content));
+                bitmapImage.DownloadProgress += (sender, eventArgs) =>
+                {
+                    if (eventArgs.Progress == 100) progressRing.IsActive = false;
+                };
                 var xamlImage = new Image
                 {
                     Source = bitmapImage,
@@ -123,7 +131,7 @@ namespace TaskOneApplication
                     Stretch = Stretch.Uniform,
                     Name = configurationModel.ItemName
                 };
-                border.Child = xamlImage;
+                grid.Children.Add(xamlImage);
             }
             else
             {
