@@ -13,13 +13,23 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0"
+        <TextBlock x:Name="ConnectionTextBlock"
+                   Grid.Row="0"
                    HorizontalAlignment="Center"
                    Style="{StaticResource HeaderTextBlockStyle}"
                    Text="Not connected" />
-        <Button Grid.Row="1"
-                Margin="10"
-                HorizontalAlignment="Stretch"
-                Content="Connect" Tapped="UIElement_OnTapped" />
+        <StackPanel Grid.Row="2" Orientation="Vertical">
+            <TextBox x:Name="MessageTextBox"
+                     Margin="10"
+                     Header="Сообщение" />
+            <Button x:Name="SendButton"
+                    HorizontalAlignment="Center"
+                    Tapped="SendButton_OnTapped">
+                Отправить
+            </Button>
+            <TextBox x:Name="EchoTextBox"
+                     Margin="10"
+                     Header="ECHO ответ" />
+        </StackPanel>
     </Grid>
 </Page>

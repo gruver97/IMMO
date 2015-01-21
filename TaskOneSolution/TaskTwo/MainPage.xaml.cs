@@ -1,8 +1,11 @@
 ﻿// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
+
 using System;
 using System.Threading;
+using Windows.ApplicationModel.Core;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
@@ -15,8 +18,8 @@ namespace TaskTwo
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private MessageWebSocket messageWebSocket;
-        private DataWriter messageWriter;
+        private MessageWebSocket _messageWebSocket;
+        private DataWriter _messageWriter;
 
         public MainPage()
         {
@@ -32,51 +35,34 @@ namespace TaskTwo
         ///     Event data that describes how this page was reached.
         ///     This parameter is typically used to configure the page.
         /// </param>
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            // TODO: Prepare page for display here.
-
-            // TODO: If your application contains multiple pages, ensure that you are
-            // handling the hardware Back button by registering for the
-            // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
-            // If you are using the NavigationHelper provided by some templates,
-            // this event is handled for you.
-        }
-
-        private async void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             try
             {
-                MessageWebSocket webSocket = messageWebSocket;
+                MessageWebSocket webSocket = _messageWebSocket;
 
                 if (webSocket == null)
                 {
                     var server = new Uri("wss://echo.websocket.org");
-
                     webSocket = new MessageWebSocket();
                     webSocket.Control.MessageType = SocketMessageType.Utf8;
                     webSocket.MessageReceived += MessageReceived;
                     webSocket.Closed += Closed;
 
-
                     await webSocket.ConnectAsync(server);
-                    messageWebSocket = webSocket;
-                    messageWriter = new DataWriter(webSocket.OutputStream);
+                    ConnectionTextBlock.Text = "Connected";
+                    _messageWebSocket = webSocket;
+                    _messageWriter = new DataWriter(webSocket.OutputStream);
                 }
-
-                string message = "Test ECHO message";
-
-                messageWriter.WriteString(message);
-
-                await messageWriter.StoreAsync();
             }
             catch (Exception ex)
             {
                 WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
+                ConnectionTextBlock.Text = status.ToString();
             }
         }
 
-        private void MessageReceived(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args)
+        private async void MessageReceived(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args)
         {
             try
             {
@@ -84,6 +70,12 @@ namespace TaskTwo
                 {
                     reader.UnicodeEncoding = UnicodeEncoding.Utf8;
                     string read = reader.ReadString(reader.UnconsumedBufferLength);
+                    await
+                        CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        {
+                            EchoTextBox.Text = read;
+                            SendButton.IsEnabled = true;
+                        });
                 }
             }
             catch (Exception ex)
@@ -94,10 +86,33 @@ namespace TaskTwo
 
         private void Closed(IWebSocket sender, WebSocketClosedEventArgs args)
         {
-            MessageWebSocket webSocket = Interlocked.Exchange(ref messageWebSocket, null);
+            MessageWebSocket webSocket = Interlocked.Exchange(ref _messageWebSocket, null);
             if (webSocket != null)
             {
                 webSocket.Dispose();
+            }
+        }
+
+        private async void SendButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            SendButton.IsEnabled = false;
+            try
+            {
+                MessageWebSocket webSocket = _messageWebSocket;
+
+                _messageWebSocket = webSocket;
+                _messageWriter = new DataWriter(webSocket.OutputStream);
+
+                string message = MessageTextBox.Text;
+
+                _messageWriter.WriteString(message);
+
+                await _messageWriter.StoreAsync();
+            }
+            catch (Exception ex)
+            {
+                WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
+                ConnectionTextBlock.Text = status.ToString();
             }
         }
     }
