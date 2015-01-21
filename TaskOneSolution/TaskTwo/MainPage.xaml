@@ -29,7 +29,7 @@
             </Button>
             <TextBox x:Name="EchoTextBox"
                      Margin="10"
-                     Header="ECHO ответ" />
+                     Header="ECHO ответ" IsReadOnly="True"/>
         </StackPanel>
     </Grid>
 </Page>
