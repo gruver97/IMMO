@@ -21,7 +21,8 @@
         <StackPanel Grid.Row="2" Orientation="Vertical">
             <TextBox x:Name="MessageTextBox"
                      Margin="10"
-                     Header="Сообщение" />
+                     Header="Сообщение"
+                     PlaceholderText="DefaultMessage" />
             <Button x:Name="SendButton"
                     HorizontalAlignment="Center"
                     Tapped="SendButton_OnTapped">
@@ -29,7 +30,8 @@
             </Button>
             <TextBox x:Name="EchoTextBox"
                      Margin="10"
-                     Header="ECHO ответ" IsReadOnly="True"/>
+                     Header="ECHO ответ"
+                     IsReadOnly="True" />
         </StackPanel>
     </Grid>
 </Page>

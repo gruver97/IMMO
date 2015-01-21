@@ -81,6 +81,7 @@ namespace TaskTwo
             catch (Exception ex)
             {
                 WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
+                SendButton.IsEnabled = true;
             }
         }
 
@@ -103,7 +104,7 @@ namespace TaskTwo
                 _messageWebSocket = webSocket;
                 _messageWriter = new DataWriter(webSocket.OutputStream);
 
-                string message = MessageTextBox.Text;
+                string message = string.IsNullOrWhiteSpace(MessageTextBox.Text) ? "DefaultMessage" : MessageTextBox.Text;
 
                 _messageWriter.WriteString(message);
 
